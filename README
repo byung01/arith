@@ -1,0 +1,166 @@
+COMP 40 Homework #3 README
+by Theodore Tan (ttan02) and Bill Yung (byung01)
+22nd October 2015
+
+* * * * * 
+
+Acknowledgements
+        
+        Thanks to the COMP40 TAs and Noah for general advice and answering 
+        our questions.
+
+* * * * * 
+
+Included Files:
+40image.c
+compress40.c
+pack40.h
+pack40.c
+bitpack.c
+
+* * * * *
+
+Architecture
+
+The program is divided into 4 main modules as outlined in the diagram below:
+
+40image(Client): Opens a file and passes it to the compress40 interface. 
+                 Based on the user’s specifications, compress40 will either 
+                 run compress or decompress.
+
+compress40: Reads and writes the image in either compressed or decompressed 
+            form based on which function is called.
+
+pack40: Packs a 2 x 2 block into a 32-bit word, or unpacks a word into a 2 x 2 
+        block. This interface will hide the details of bitpack from compress40.
+
+Bitpack: Does the actual packing into the 32-bit word, based on a, b, c, d,
+         average of Pb, and average of Pr. Also unpacks the bit word to obtain 
+         the variables a, b, c, d, average of Pb, and average of Pr.
+
+* * * * *
+
+Interfaces
+
+compress40.h
+        Description: This interface contains the functions to compress or 
+                     decompress an image. Depending on the command given on the
+                     command line, the corresponding function will be called.
+        Functions:
+                void compress40: Reads in an image, pack 2x2 blocks of pixels 
+                                 into 32-bit codewords and prints them out to
+                                 stdout
+                
+                void decompress40: Reads in a file of codewords, unpacks it to 
+                                   2x2 blocks of pixels and prints the
+                                   decompressed image to stdout
+
+pack40.h
+        Description: This interface contains the functions to pack and unpack
+                     the codewords depending on whether the program is 
+                     compressing or decompressing. The interface also contains 
+                     the functions to print and read codewords.
+        Functions:
+                uint64_t pack40: Takes in a 2x2 block of pixels and packs it 
+                into a codeword. The codeword is returned at the end of the
+                function.
+                
+                UArray_T unpack40: Takes in a codeword and unpacks it into a 2x2
+                block of pixels. The block is then returned at the end of the
+                function.
+                
+                void print_packed: Prints out the codewords in a specific
+                compressed format.
+
+                UArray_T read_packed: Reads in the codewords from a file in a
+                specific compressed format
+
+bitpack.h
+        Description: This interface contains the functions to manipulate a 
+                     64-bit word.
+        Functions:
+                bool Bitpack_fitsu: Checks to see if the unsigned value can fit
+                                    in the range of a certain width of bits
+
+                bool Bitpack_fitss: Checks to see if the signed value can fit in
+                                    the range of a certain width of bits
+
+                uint64_t Bitpack_getu: Gets an unsigned value of a certain width
+                                       out from a 64-bit word
+
+                int64_t Bitpack_gets: Gets a signed value of a certain width out
+                                      from a 64-bit word
+
+                uint64_t Bitpack_newu: Inserts values into a 64-bit word. Will
+                                       abort if value does not fit in certain
+                                       width.
+
+                uint64_t Bitpack_news: Inserts values into a 64-bit word. Will
+                                       abort if value does not fit in certain
+                                       width.
+
+* * * * *
+
+Implementation
+
+compress40.c
+        Description: This contains the implementation for functions declared in
+                     compress40.h
+
+        Private Functions: Helper functions to compress and decompress the image
+        
+        Compressing
+        - Pnm_ppm read_image
+        - void trim_image
+        - A2 convert_CV: Converts from RGB to component video colorspace
+        - UArray_T compressor: Packs all codewords into a UArray_T
+        - void write_compressed: Writes out the codewords to stdout
+        
+        Decompressing
+        - struct Pnm_ppm create_image
+        - A2 decompressor: Unpacks all the codewords and returns a 2D array of
+          component video colorspace
+        - Pnm_ppm convert_RGB: Converts from component video colorspace to RGB
+        - void check_range: Makes sure that RGB values are in range
+        - void write_decompressed: Writes out the image using Pnm_ppmwrite
+
+pack40.c
+        Description: This file contains the implementation for functions 
+                     declared in pack40.h
+        
+        Private Functions:
+        
+        pack40
+        - bitWord initialize_bitword: Calls the other functions to convert
+          component video colorspaces into values that can be packed into 64 
+          bit words
+        - bitWord set_chroma_index: Sets the chroma index of Pb and Pr
+        - Average find_average: Finds the average of Pb and Pr
+        - void check_range: Makes sure that b, c, and d are in range
+        - bitWord cosine_transform
+        - uint64_t pack_word
+        
+        unpack40
+        - bitWord unpack_word
+        - UArray_T initialize_colorspace: Calls the other functions to get
+          component video colorspace values
+        - UArray_T reverse_cosine_transform
+        - UArray_T get_chroma: Gets the Pb and Pr values from chroma
+
+bitpack.c
+        Description: This file contains the implementation for functions 
+        declared in bitpack.h
+        
+        Private Functions:
+        - static inline uint64_t leftshift: Shifts the bits to the left and
+          always pulls 0 from the right
+        - static inline uint64_t arithright: Shifts the bits to the right and
+          propagates the most significant bit. If 1, then it propagates 1, else
+          propagates 0
+        - static inline uint64_t logicalright: Shifts bits to the right and
+          always propagates 0
+
+* * * * *
+
+We spent around 20 hours analyzing the problems posed in the assignment.
+We spent around 30 hours solving the problems after our analysis.
