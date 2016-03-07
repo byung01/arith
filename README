@@ -2,6 +2,15 @@ COMP 40 Homework #3 README
 by Theodore Tan (ttan02) and Bill Yung (byung01)
 22nd October 2015
 
+* * * * *
+
+Usage
+    ./40image -c [filename}
+        Compresses an image in ppm format into 32-bit codewords
+
+    ./40image -d [filename]
+        Takes in 32-bit codewords and decompresses into an image in ppm format
+
 * * * * * 
 
 Acknowledgements
